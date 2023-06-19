@@ -4,6 +4,7 @@ require("@nomiclabs/hardhat-etherscan");
 const { verify } = require("../utils/verify");
 
 const FUND_AMOUNT = ethers.utils.parseEther("1");
+// console.log("deployement running")
 module.exports = async ({ getNamedAccounts, deployments }) => {
     const { log,deploy } = deployments;
     const { deployer } = await getNamedAccounts();

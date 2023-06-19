@@ -28,5 +28,9 @@ module.exports = {
     {
       default:1,
     }
+  },
+  mocha:
+  {
+    timeout: 200000,
   }
 };

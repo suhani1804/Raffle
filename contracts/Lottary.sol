@@ -1,8 +1,3 @@
-// Raffle the lottery (it means that the winner is chosen randomly)
-// Pay some eth to get the Lottary i.e to be listed in winner list
-// The winner is chosen randomly ( Verifiably random i.e without any tampering)
-// Winner will be selected at any minute and after that the contract will be reset (AUTOMATION)
-// Chainlink vrf is used for random number generation and chainlink keeper is used for automation
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.7;
@@ -18,19 +13,14 @@ error Raffle__TransferFailed();
 error Raffle__SendMoreToEnterRaffle();
 error Raffle__RaffleNotOpen();
 
-/**@title A sample Raffle Contract
- * @author Patrick Collins
- * @notice This contract is for creating a sample raffle contract
- * @dev This implements the Chainlink VRF Version 2
- */
+
 contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /* Type declarations */
     enum RaffleState {
         OPEN,
         CALCULATING
     }
-    /* State variables */
-    // Chainlink VRF Variables
+
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     uint64 private immutable i_subscriptionId;
     bytes32 private immutable i_gasLane;
@@ -71,8 +61,6 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     }
 
     function enterRaffle() public payable {
-        // require(msg.value >= i_entranceFee, "Not enough value sent");
-        // require(s_raffleState == RaffleState.OPEN, "Raffle is not open");
         if (msg.value < i_entranceFee) {
             revert Raffle__SendMoreToEnterRaffle();
         }
@@ -85,15 +73,6 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         emit RaffleEnter(msg.sender);
     }
 
-    /**
-     * @dev This is the function that the Chainlink Keeper nodes call
-     * they look for `upkeepNeeded` to return True.
-     * the following should be true for this to return true:
-     * 1. The time interval has passed between raffle runs.
-     * 2. The lottery is open.
-     * 3. The contract has ETH.
-     * 4. Implicity, your subscription is funded with LINK.
-     */
     function checkUpkeep(
         bytes memory /* checkData */
     )
@@ -113,10 +92,6 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         return (upkeepNeeded, "0x0"); // can we comment this out?
     }
 
-    /**
-     * @dev Once `checkUpkeep` is returning `true`, this function is called
-     * and it kicks off a Chainlink VRF call to get a random winner.
-     */
     function performUpkeep(
         bytes calldata /* performData */
     ) external override {
@@ -141,20 +116,10 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         emit RequestedRaffleWinner(requestId);
     }
 
-    /**
-     * @dev This is the function that Chainlink VRF node
-     * calls to send the money to the random winner.
-     */
     function fulfillRandomWords(
-        uint256, /* requestId */
+        uint256 /* requestId */,
         uint256[] memory randomWords
-    ) internal override {
-        // s_players size 10
-        // randomNumber 202
-        // 202 % 10 ? what's doesn't divide evenly into 202?
-        // 20 * 10 = 200
-        // 2
-        // 202 % 10 = 2
+    ) internal virtual override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
         s_recentWinner = recentWinner;
@@ -206,5 +171,4 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     function getNumberOfPlayers() public view returns (uint256) {
         return s_players.length;
     }
-    
 }
